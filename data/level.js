@@ -84,8 +84,8 @@ const level = [
         },
         animation: {
             psize: 1,
-            p: "                                                                                                                                                                                                                                                                         ",
-            r: "                                                                                                                                                                                                                                                                         ",
+            p: " p       p       p               p   p   p   p   p   p   p   p           p   p           p   p                                                       p       p       p       p       p       p       p   p   p   p   p   p   p   p   p   p   p   p   p                   ",
+            r: "  r       r       r                                              r               r               r       r   r   r   r   r   r   p   p           r       r       r       r       r       r       r                                                       r   r   r       ",
         }
     },
     {
