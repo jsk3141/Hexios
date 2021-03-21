@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather+Sans&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="style.css?v=1">
+    <title>hexios</title>
+    <script type="text/javascript" src="data/keycodes.js"></script>
+    <script type="text/javascript" src="data/level.js?v=1.2"></script>
+    <script type="text/javascript" src="https://w.soundcloud.com/player/api.js"></script>
+</head>
+<body>
+    <div id="music-box"></div>
+    <div id="main" class="page">
+        <div id="title">HEXIOS</div>
+        <div id="level-container">
+            <div id="slc-0" class="small-lev-cont"></div>
+            <div id="slc-1" class="small-lev-cont"></div>
+            <div id="slc-2" class="small-lev-cont"></div>
+            <div id="slc-3" class="small-lev-cont"></div>
+        </div>
+    </div>
+    <div id="game" class="page" style="display: none;">
+        <div id="player">
+            <div id="road1" class="road">
+                <div id="decision-line1" class="decision-line"></div>
+            </div>
+            <div id="road2" class="road">
+                <div id="decision-line2" class="decision-line"></div>
+            </div>
+            <div id="road3" class="road">
+                <div id="decision-line3" class="decision-line"></div>
+            </div>
+            <div id="road4" class="road">
+                <div id="decision-line4" class="decision-line"></div>
+            </div>
+            <div id="road5" class="road">
+                <div id="decision-line5" class="decision-line"></div>
+            </div>
+            <div id="road6" class="road">
+                <div id="decision-line6" class="decision-line"></div>
+            </div>
+        </div>
+        <div id="show-combo">
+            <div id="combo"></div>
+            <div id="accuracy"></div>
+        </div>
+    </div>
+    <div id="score" class="page" style="display: none;"></div>
+
+    <script id="main-script">
+        //page
+        let page = "main";
+
+        //settings
+        const keyBinds = localStorage["keyBinds"] ? JSON.parse(localStorage["keyBinds"]) : ["f", "j", "k", "l", "s", "d"];
+        const soundAdjustment = localStorage["soundAdjustment"] ? Number(localStorage["soundAdjustment"]) : 160;
+
+        //page 이동
+        function pageChange(id) {
+            for(let obj of document.getElementsByClassName("page")) obj.style.display = "none";
+            document.getElementById(id).style.display = "block";
+            page = id;
+        }
+
+        //메인화면 구성
+        function createLevelElement(index) {
+            let levelElement = document.createElement("div");
+            levelElement.setAttribute("id", `main-lv${index}`);
+            levelElement.setAttribute("class", "main-levels");
+            levelElement.setAttribute("onclick", `play(${index})`);
+            document.querySelector(`#slc-${Math.floor(index/8)}`).appendChild(levelElement);
+            levelElement.innerHTML = `
+            <div class="main-vis-lv-info">
+                <div class="main-vis-emoji" style="text-shadow: 0px 0px calc(5vw * 10 / 100) ${level[index].theme_color[0]};">${level[index].logo}</div>
+                <div class="main-vis-title" style="text-shadow: 0px 0px calc(5vw * 10 / 100) ${level[index].theme_color[0]};">${level[index].name}</div>
+            </div>
+            <div class="main-vis-road"><div class="main-vis-bar" style="box-shadow: 0px 0px calc(5vw * 6 / 100) ${level[index].theme_color[1]};background-color: ${level[index].theme_color[1]};"></div></div>
+            `
+            for(let i=0;i<5;i++){
+                levelElement.innerHTML += `<div class="main-vis-road"><div class="main-vis-bar" style="box-shadow: 0px 0px calc(5vw * 6 / 100) ${level[index].theme_color[1]};"></div></div>`;
+            }
+            levelElement.style.top = `2.5vw`;
+            if(index%16<8){
+                levelElement.style.left = `${(2.5+10*(index%8))}vw`;
+            }else{
+                levelElement.style.left = `${(72.5-10*(index%8))}vw`;
+            }
+        }
+        for(i=0;i<level.length;i++){createLevelElement(i)}
+    </script>
+    <script id="game-script">
+        //타이머 (스탑워치)
+        class Timer {
+            constructor(value = 0) {
+                this.value = value;
+            }
+            start() {
+                this.interval = setInterval( () => {
+                    this.value += 3;
+                }, 3)
+            }
+            end() {
+                clearInterval(this.interval);
+                this.value = 0;
+            }
+        }
+
+        //game 관련 변수
+        const pressedKeys = [0, false, false, false, false, false, false];
+        const gameObj = {
+            curindex : 0,
+            savedNoteIndex: 0,
+            isPlaying: false,
+            gameTimer: new Timer(1000),
+            noteTimer: new Timer(),
+            checkNoteArray: [0,[],[],[],[],[],[]],
+            combo: 0,
+            score: {
+                maxCombo: 0,
+                perfect: 0,
+                good: 0,
+                bad: 0,
+                miss: 0
+            },
+            reset() {
+                this.curindex = 0;
+                this.gameTimer = new Timer(1000);
+                this.noteTimer = new Timer();
+                this.checkNoteArray = [0,[],[],[],[],[],[]];
+                this.combo = 0;
+                this.score = {
+                    maxCombo: 0,
+                    perfect: 0,
+                    good: 0,
+                    bad: 0,
+                    miss: 0
+                }
+            }
+        }
+        const visuals = {
+            cssVar : {
+                origin : ()=>{return document.documentElement.style},
+                get : (vName)=>{return visuals.cssVar.origin().getPropertyValue(vName)},
+                set : (vName, value)=>{visuals.cssVar.origin().setProperty(vName, value)}
+            },
+            rotate : (deg, t)=>{
+                let division = 4;
+                let unitTime = t/division;
+                visuals.cssVar.set("--player-transitionTime", unitTime)
+                let unitAngle = deg/division;
+
+                visuals.cssVar.set("--player-rotate", Number(visuals.cssVar.get("--player-rotate")) + unitAngle);
+                division--;
+                let rtInterval = setInterval(()=>{
+                    division--;
+                    if(division<=0){
+                        clearInterval(rtInterval);
+                    }
+                    visuals.cssVar.set("--player-rotate", Number(visuals.cssVar.get("--player-rotate")) + unitAngle);
+                }, unitTime)
+                return unitTime;
+            },
+            big : (to, t, division=false)=>{
+                if(!division) division = Math.ceil(t/50);
+                let unitTime = t/division;
+                visuals.cssVar.set("--player-transitionTime", unitTime)
+                let unitScale = (to - visuals.cssVar.get("--scale"))/division
+
+                visuals.cssVar.set("--scale", Number(visuals.cssVar.get("--scale")) + unitScale);
+                division--;
+                if(division>1){
+                    let sZInterval = setInterval(()=>{
+                        division--;
+                        if(division<=0){
+                            clearInterval(sZInterval);
+                        }
+                        visuals.cssVar.set("--scale", Number(visuals.cssVar.get("--scale")) + unitScale);
+                    }, unitTime)
+                }
+            },
+            pop : (to, t)=>{
+                let curSize = visuals.cssVar.get("--scale")
+                visuals.big(to, t/3);
+                setTimeout(()=>{visuals.big(curSize, 2 * t/3);}, t/3)
+            }
+        }
+        visuals.cssVar.set("--player-rotate", 0)
+        visuals.cssVar.set("--scale", 1)
+
+        //게임 단계 실행
+        function play(index, note=0) {
+            pageChange("game");
+            gameObj.isPlaying = true;
+            document.getElementById("music-box").innerHTML = '<iframe id="music" width="0" height="0" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/'+level[index].music+'&color=%23ff5500&auto_play=true&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true&visual=true"></iframe>';
+            let music = SC.Widget(document.getElementById("music"));
+            let musicSetting = false;
+            if(!note){
+                document.getElementById("combo").textContent = level[index].logo;
+                document.getElementById("accuracy").textContent = level[index].name;
+                gameObj.reset();
+            }
+            gameObj.curindex = index;
+            document.querySelector(':root').style.setProperty('--theme-color-one', level[gameObj.curindex].theme_color[0]);
+            document.querySelector(':root').style.setProperty('--theme-color-two', level[gameObj.curindex].theme_color[1]);
+
+            setTimeout(() => {
+                if(gameObj.isPlaying){
+                    gameObj.noteTimer.start();
+                    gameObj.gameTimer.start();
+                }
+            }, 1000 - level[index].bpm);
+            setTimeout(() => {
+                if(gameObj.isPlaying){
+                    playNote(index);
+                }
+            }, 1000 - soundAdjustment - level[index].bpm);
+            //music 초기 세팅
+            music.bind(SC.Widget.Events.READY, function() {
+                if(musicSetting == false) {
+                    music.pause();
+                    music.setVolume(50);
+                }
+            });
+            setTimeout(() => {
+                if(gameObj.isPlaying){
+                    music.seekTo(level[index].delay + level[index].bpm * note);
+                    music.play();
+                    gameObj.gameTimer.end();
+                    gameObj.gameTimer.start();
+                }
+            }, 4000 - level[index].bpm);
+        }
+
+        //노트 떨어지기
+        function playNote(index) {
+            let noteIndex = 0;
+            let noteInterval = setInterval(() => {
+                for(let i = 1; i <= 6; i++) makeNote(index, i, noteIndex);
+                if(level[index].animation.p[noteIndex]=="p") setTimeout(()=>{visuals.pop(1.1, level[gameObj.curindex].bpm * (level[index].animation.psize))}, 3000);
+                if(level[index].animation.r[noteIndex]=="r") setTimeout(()=>{visuals.rotate(360, level[gameObj.curindex].bpm * 4 * (level[index].animation.psize));}, 3000);
+                noteIndex++;
+                if(noteIndex == level[index].note[1].length) clearInterval(noteInterval); //gg
+            }, level[index].bpm);
+        }
+
+        //노트 생성 및 제거
+        function makeNote(index, roadIndex, noteIndex) {
+            let noteArray = level[index].note[roadIndex];
+
+            let type = "default";
+            let longStart = false;
+            if(noteArray[noteIndex] != "=" && noteArray[noteIndex - 1] == "=") type = "long end"; //long start 도 default로 간주함;
+            else if(noteArray[noteIndex] == "=" && noteArray[noteIndex - 1] != "=") longStart = true; //하지만 default와 구분은 해 주어야 함.
+            else if(noteArray[noteIndex] == "=" || noteArray[noteIndex] == " ") return;
+
+            let note = document.createElement("div");
+            note.setAttribute("class", "note");
+            document.getElementById(`road${roadIndex}`).appendChild(note);
+            note.style.animation = "6000ms linear 0ms note";
+            gameObj.checkNoteArray[roadIndex].push({"element": note, "time": gameObj.noteTimer.value, "type": type});
+
+            if(longStart == true) {
+                let longNoteLength = 0;
+                for(let i = noteIndex; noteArray[i] == "="; i++) {
+                    longNoteLength++;
+                }
+                let longNoteHeight = String((getComputedStyle(document.documentElement).getPropertyValue("--scale") * level[index].bpm) * longNoteLength * 48 / 3000)+'vw';
+                let longNoteContainer = document.createElement("div");
+                longNoteContainer.setAttribute("class", "long-note-container");
+                document.getElementById(`road${roadIndex}`).appendChild(longNoteContainer);
+                longNoteContainer.style.height = longNoteHeight;
+                longNoteContainer.style.animation = "6000ms linear 0ms note";
+                longNoteContainer.style.top = `-${longNoteHeight}`;
+
+                let longNote = document.createElement("div");
+                longNote.setAttribute("class", "long-note");
+                longNoteContainer.appendChild(longNote);
+                setTimeout(() => {
+                    longNoteContainer.style.webkitAnimationPlayState = "paused";
+                    longNote.style.animation = `${longNoteLength * level[index].bpm}ms linear 0ms long-note`;
+                }, 3000);
+                setTimeout(() => {
+                    longNoteContainer.removeChild(longNote);
+                    longNoteContainer.parentElement.removeChild(longNoteContainer);
+                }, 3000 + longNoteLength * level[index].bpm)
+            }
+
+            let miss = setTimeout(() => {
+                if(note.parentElement) { //note가 존재한다면 note의 상위 element도 존재한다를 이용함 
+                    gameObj.combo = 0;
+                    gameObj.score.miss++;
+                    scoreUpdate("miss");
+                    note.parentElement.removeChild(note);
+                    gameObj.checkNoteArray[roadIndex].shift();
+                }
+            }, 3150);
+        }
+
+        //노트 정확도 확인
+        function checkNote(roadIndex, type) {
+            for(let obj of gameObj.checkNoteArray[roadIndex]) {
+                if(obj.type != type) return;
+                let gap = Math.abs(gameObj.gameTimer.value - obj.time);
+                if(gap < 60) {
+                    gameObj.combo++;
+                    gameObj.score.maxCombo = gameObj.combo>gameObj.score.maxCombo? gameObj.combo : gameObj.score.maxCombo;
+                    gameObj.score.perfect++;
+                    scoreUpdate("perfect");
+                    obj.element.parentElement.removeChild(obj.element);
+                    gameObj.checkNoteArray[roadIndex].shift();
+                    return;
+                }
+                else if(gap < 80){
+                    gameObj.combo = 0;
+                    gameObj.score.good++;
+                    scoreUpdate("good");
+                    obj.element.parentElement.removeChild(obj.element);
+                    gameObj.checkNoteArray[roadIndex].shift();
+                    return;
+                }
+                else if(gap < 120) {
+                    gameObj.combo = 0;
+                    gameObj.score.bad++;
+                    scoreUpdate("bad");
+                    obj.element.parentElement.removeChild(obj.element);
+                    gameObj.checkNoteArray[roadIndex].shift();
+                }
+                else if(type == "long end") {
+                    gameObj.combo = 0;
+                    gameObj.score.miss++;
+                    scoreUpdate("miss");
+                    obj.element.parentElement.removeChild(obj.element);
+                    gameObj.checkNoteArray[roadIndex].shift();
+                    return;
+                }
+                //miss는 시간초과
+            }
+        }
+        function keyPressEffect(roadIndex) {
+            document.getElementById(`road${roadIndex}`).style.background = `linear-gradient(to top, rgba(192, 192, 192, 0.03) 60%, ${level[gameObj.curindex].theme_color[2]} calc(100% - calc(var(--scale) * 51.9px)), transparent calc(100% - calc(var(--scale) * 51.9px)))`;
+            document.querySelector('#show-combo').style.opacity = 0.95;
+            document.querySelector('#show-combo').style.transform = 'scale(0.95)';
+        }
+        function keyUnpressEffect(roadIndex) {
+            document.getElementById(`road${roadIndex}`).style.background = ''
+            document.querySelector('#show-combo').style.opacity = 1;
+            document.querySelector('#show-combo').style.transform = 'scale(1)';
+        }
+
+        function scoreUpdate(accuracy) {
+            let accuracyColor = accuracy == 'perfect' ? level[gameObj.curindex].theme_color[0] : 'black';
+            document.getElementById("combo").textContent = gameObj.combo;
+            document.getElementById("accuracy").textContent = accuracy;
+            document.getElementById("accuracy").style.textShadow = `0px 0px 10px ${accuracyColor}`;
+        }
+
+        window.onkeydown = () => {
+            if(page == "game") {
+                let keyIndex = keyBinds.indexOf(keycodes[window.event.keyCode]) + 1;
+                if(keyIndex >= 1 && keyIndex <= 6) {
+                    pressedKeys[keyIndex] = "down";
+                    for(let i = 1; i <= 6; i++) {
+                        if(pressedKeys[i] == "down") {
+                            checkNote(i, "default");
+                            keyPressEffect(i);
+                        }
+                    }
+                }
+            }
+        };
+
+        window.onkeyup = () => {
+            if(page == "game") {
+                let keyIndex = keyBinds.indexOf(keycodes[window.event.keyCode]) + 1;
+                if(keyIndex >= 1 && keyIndex <= 6) {
+                    pressedKeys[keyIndex] = "up";
+                    for(let i = 1; i <= 6; i++) {
+                        if(pressedKeys[i] == "up") {
+                            checkNote(i, "long end");
+                            keyUnpressEffect(i);
+                            pressedKeys[keyIndex] = false;
+                        }
+                    }
+                }
+                if(window.event.keyCode==27){
+                    visuals.rotate(360, level[gameObj.curindex].bpm * 4)
+                }
+                if(window.event.keyCode==32){
+                    visuals.pop(1.1, level[gameObj.curindex].bpm)
+                }
+            }
+        };
+
+    </script>
+
+</body>
+</html>
