@@ -206,10 +206,8 @@
             document.querySelector(':root').style.setProperty('--theme-color-two', level[gameObj.curindex].theme_color[1]);
 
             setTimeout(() => {
-                if(gameObj.isPlaying){
-                    gameObj.noteTimer.start();
-                    gameObj.gameTimer.start();
-                }
+                gameObj.noteTimer.start();
+                gameObj.gameTimer.start();
             }, 1000 - level[index].bpm);
             setTimeout(() => {
                 playNote(index);
