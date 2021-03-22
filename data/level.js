@@ -18,10 +18,30 @@ const level = [
         },
         animation: {
             psize: 1,
-            p: "  p   p   p   p   p   p                                                                                                                                                                                                                                                                        ",
-            r: "                          r   r   r   r   r   r                                                                                                                                                                                                                                                ",
+            p: "                                                                                                                                                                                                                                                                                               ",
         }
     },
+    // {
+    //     name: "光るなら",
+    //     logo: "♫",//"🎹",
+    //     music: 199188362,
+    //     bpm: 174, //실제 bpm이 아닌 한 박자의 길이(ms)
+    //     theme_color: ['#f7dfe3', '#eea972', 'rgba(238, 169, 114, 0.1)'],
+    //     volume: 27,
+    //     delay: 0,
+    //     note: {
+    //         1: "        1 1          1   1 1  1 1  1  1           1                          1  1     ",
+    //         2: " 22     2        2     2    2       2           2                          2      2   ",
+    //         3: " 3 3               3                      3   3                      3                ",
+    //         4: "    4       4        4                       4                     4   4              ",
+    //         5: "    5 5     5    5     5                                        5        5            ",
+    //         6: "       6   6       6      6       6                           6               6       "
+    //     },
+    //     animation: {
+    //         psize: 1,
+    //         p: "                                                                                      ",
+    //     }
+    // },
     {
         name: "Unity",
         logo: "𝌻",
@@ -40,8 +60,7 @@ const level = [
         },
         animation: {
             psize: 2,
-            p: " p       p       p       p       p       p                        p       p                       p       p                       p       p                       p   p   p   p                                                                                                                                                  p       p                       p       p                       p       p                       p   p   p   p    ",
-            r: "                                                 r                                r                               r                               r                               r                                                                                                                              r                               r                               r                               r                               r",
+            p: " p       p       p       p       p       p       r                p       p       b               p       p       r               p       p       b               p   p   p   p   r               r       b       p       p       r       b       p       p       r       b       p       p       r              r               p       p       r               p       p       b               p       p       r               p   p   p   p   r",
         }
     },
     {
@@ -62,8 +81,7 @@ const level = [
         },
         animation: {
             psize: 1,
-            p: " p       p       p               p   p   p   p   p   p   p   p           p   p           p   p                                                       p       p       p       p       p       p       p   p   p   p   p   p   p   p   p   p   p   p   p                   ",
-            r: "  r       r       r                                              r               r               r       r   r   r   r   r   r   p   p           r       r       r       r       r       r       r                                                       r   r   r       ",
+            p: " pt      pt      pt              p   p   p   p   p   p   p   p   r       p   p   r       p   p   b       r   r   r   r   r   r   r   r           m   p   m   p   m   p   m   p   m   p   m   p   m   p   m   p   m   p   m   p   m   p   m   p   b   p   r   r   r       ",
         }
     },
 ]
