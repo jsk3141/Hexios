@@ -7,7 +7,7 @@
     <link rel="stylesheet" type="text/css" href="style.css?v=1">
     <title>hexios</title>
     <script type="text/javascript" src="data/keycodes.js"></script>
-    <script type="text/javascript" src="data/level.js?v=1.0"></script>
+    <script type="text/javascript" src="data/level.js?v=1.5"></script>
     <script type="text/javascript" src="https://w.soundcloud.com/player/api.js"></script>
 </head>
 <body>
@@ -112,7 +112,7 @@
         const gameObj = {
             curindex : 0,
             savedNoteIndex: 0,
-            isPlaying: false,
+            isHard: false,
             gameTimer: new Timer(1000),
             noteTimer: new Timer(),
             checkNoteArray: [0,[],[],[],[],[],[]],
@@ -192,7 +192,7 @@
         //게임 단계 실행
         function play(index, note=0) {
             pageChange("game");
-            gameObj.isPlaying = true;
+            gameObj.isHard = true;
             document.getElementById("music-box").innerHTML = '<iframe id="music" width="0" height="0" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/'+level[index].music+'&color=%23ff5500&auto_play=true&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true&visual=true"></iframe>';
             let music = SC.Widget(document.getElementById("music"));
             let musicSetting = false;
@@ -212,9 +212,7 @@
                 }
             }, 1000 - level[index].bpm);
             setTimeout(() => {
-                if(gameObj.isPlaying){
-                    playNote(index);
-                }
+                playNote(index);
             }, 1000 - soundAdjustment - level[index].bpm);
             //music 초기 세팅
             music.bind(SC.Widget.Events.READY, function() {
@@ -224,12 +222,10 @@
                 }
             });
             setTimeout(() => {
-                if(gameObj.isPlaying){
-                    music.seekTo(level[index].delay + level[index].bpm * note);
-                    music.play();
-                    gameObj.gameTimer.end();
-                    gameObj.gameTimer.start();
-                }
+                music.seekTo(level[index].delay + level[index].bpm * note);
+                music.play();
+                gameObj.gameTimer.end();
+                gameObj.gameTimer.start();
             }, 4000 - level[index].bpm);
         }
 
@@ -238,8 +234,27 @@
             let noteIndex = 0;
             let noteInterval = setInterval(() => {
                 for(let i = 1; i <= 6; i++) makeNote(index, i, noteIndex);
-                if(level[index].animation.p[noteIndex]=="p") setTimeout(()=>{visuals.pop(1.1, level[gameObj.curindex].bpm * (level[index].animation.psize))}, 3000);
-                if(level[index].animation.r[noteIndex]=="r") setTimeout(()=>{visuals.rotate(360, level[gameObj.curindex].bpm * 4 * (level[index].animation.psize));}, 3000);
+                if(gameObj.isHard){
+                    switch(level[index].animation.p[noteIndex]) {
+                        case "p":
+                            setTimeout(()=>{visuals.pop(1.1, level[gameObj.curindex].bpm * (level[index].animation.psize))}, 3000);
+                            break;
+                        case "r":
+                            setTimeout(()=>{visuals.rotate(360, level[gameObj.curindex].bpm * 4 * (level[index].animation.psize));}, 3000);
+                            break;
+                        case "b":
+                            setTimeout(()=>{visuals.rotate(-360, level[gameObj.curindex].bpm * 4 * (level[index].animation.psize));}, 3000);
+                            break;
+                        case "t":
+                            setTimeout(()=>{visuals.rotate(120, level[gameObj.curindex].bpm * 4/3 * (level[index].animation.psize));}, 3000);
+                            break;
+                        case "m":
+                            setTimeout(()=>{visuals.rotate(-120, level[gameObj.curindex].bpm * 4/3 * (level[index].animation.psize));}, 3000);
+                            break;   
+                        default:
+                            break;
+                    }
+                }
                 noteIndex++;
                 if(noteIndex == level[index].note[1].length) clearInterval(noteInterval); //gg
             }, level[index].bpm);
