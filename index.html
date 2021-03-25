@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Merriweather+Sans&display=swap" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="style.css?v=1">
+    <link rel="stylesheet" type="text/css" href="style.css?v=1.2">
     <title>hexios</title>
     <script type="text/javascript" src="data/keycodes.js"></script>
-    <script type="text/javascript" src="data/level.js?v=1.5"></script>
+    <script type="text/javascript" src="data/level.js?v=1.7"></script>
     <script type="text/javascript" src="https://w.soundcloud.com/player/api.js"></script>
 </head>
 <body>
@@ -42,10 +42,18 @@
                 <div id="decision-line6" class="decision-line"></div>
             </div>
         </div>
+        <div id="scorebar">
+            <div id="score" style="display: none;">
+                0
+            </div>
+        </div>
         <div id="show-combo">
             <div id="combo"></div>
             <div id="accuracy"></div>
         </div>
+    </div>
+    <div id="result" class="page" style="display: none;">
+        <div id="result-score"></div>
     </div>
     <div id="score" class="page" style="display: none;"></div>
 
@@ -109,6 +117,12 @@
 
         //game 관련 변수
         const pressedKeys = [0, false, false, false, false, false, false];
+        const scoreWeight = {
+            perfect: 5,
+            good: 3,
+            bad: 1,
+            miss: 0
+        }
         const gameObj = {
             curindex : 0,
             savedNoteIndex: 0,
@@ -122,7 +136,8 @@
                 perfect: 0,
                 good: 0,
                 bad: 0,
-                miss: 0
+                miss: 0,
+                totalScore : 0
             },
             reset() {
                 this.curindex = 0;
@@ -135,7 +150,8 @@
                     perfect: 0,
                     good: 0,
                     bad: 0,
-                    miss: 0
+                    miss: 0,
+                    totalScore : 0
                 }
             }
         }
@@ -253,7 +269,13 @@
                     }
                 }
                 noteIndex++;
-                if(noteIndex == level[index].note[1].length) clearInterval(noteInterval); //gg
+                if(noteIndex == level[index].note[1].length){
+                    clearInterval(noteInterval); //gg
+                    setTimeout(()=>{
+                        pageChange("result");
+                        document.getElementById("result-score").innerText = gameObj.score.totalScore
+                    }, 200)
+                }
             }, level[index].bpm);
         }
 
@@ -321,32 +343,23 @@
                 if(obj.type != type) return;
                 let gap = Math.abs(gameObj.gameTimer.value - obj.time);
                 if(gap < 80) {
-                    gameObj.combo++;
-                    gameObj.score.maxCombo = gameObj.combo>gameObj.score.maxCombo? gameObj.combo : gameObj.score.maxCombo;
-                    gameObj.score.perfect++;
                     scoreUpdate("perfect");
                     obj.element.parentElement.removeChild(obj.element);
                     gameObj.checkNoteArray[roadIndex].shift();
                     return;
                 }
                 else if(gap < 100){
-                    gameObj.combo = 0;
-                    gameObj.score.good++;
                     scoreUpdate("good");
                     obj.element.parentElement.removeChild(obj.element);
                     gameObj.checkNoteArray[roadIndex].shift();
                     return;
                 }
                 else if(gap < 120) {
-                    gameObj.combo = 0;
-                    gameObj.score.bad++;
                     scoreUpdate("bad");
                     obj.element.parentElement.removeChild(obj.element);
                     gameObj.checkNoteArray[roadIndex].shift();
                 }
                 else if(type == "long end") {
-                    gameObj.combo = 0;
-                    gameObj.score.miss++;
                     scoreUpdate("miss");
                     obj.element.parentElement.removeChild(obj.element);
                     gameObj.checkNoteArray[roadIndex].shift();
@@ -367,10 +380,23 @@
         }
 
         function scoreUpdate(accuracy) {
+            calcScore(accuracy);
             let accuracyColor = accuracy == 'perfect' ? level[gameObj.curindex].theme_color[0] : 'black';
             document.getElementById("combo").textContent = gameObj.combo;
             document.getElementById("accuracy").textContent = accuracy;
             document.getElementById("accuracy").style.textShadow = `0px 0px 10px ${accuracyColor}`;
+            document.getElementById("score").innerText = gameObj.score.totalScore;
+        }
+
+        function calcScore(accuracy) {
+            gameObj.score[accuracy]++;
+            if(accuracy=="perfect"){
+                gameObj.combo++;
+                gameObj.score.maxCombo = gameObj.combo>gameObj.score.maxCombo? gameObj.combo : gameObj.score.maxCombo;
+            }else{
+                gameObj.combo = 0;
+            }
+            gameObj.score.totalScore += scoreWeight[accuracy] + gameObj.combo;
         }
 
         window.onkeydown = () => {
