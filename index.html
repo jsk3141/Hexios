@@ -207,6 +207,7 @@
 
             setTimeout(() => {
                 gameObj.noteTimer.start();
+                gameObj.gameTimer.value = -3000;
                 gameObj.gameTimer.start();
             }, 1000 - level[index].bpm);
             setTimeout(() => {
@@ -222,8 +223,6 @@
             setTimeout(() => {
                 music.seekTo(level[index].delay + level[index].bpm * note);
                 music.play();
-                gameObj.gameTimer.end();
-                gameObj.gameTimer.start();
             }, 4000 - level[index].bpm);
         }
 
@@ -261,18 +260,21 @@
         //노트 생성 및 제거
         function makeNote(index, roadIndex, noteIndex) {
             let noteArray = level[index].note[roadIndex];
-
             let type = "default";
             let longStart = false;
+            gameObj.noteTimer.value = level[index].bpm * (noteIndex+1);
+            gameObj.gameTimer.value = gameObj.noteTimer.value - 3000;
             if(noteArray[noteIndex] != "=" && noteArray[noteIndex - 1] == "=") type = "long end"; //long start 도 default로 간주함;
             else if(noteArray[noteIndex] == "=" && noteArray[noteIndex - 1] != "=") longStart = true; //하지만 default와 구분은 해 주어야 함.
             else if(noteArray[noteIndex] == "=" || noteArray[noteIndex] == " ") return;
+            // console.log(gameObj.gameTimer.value, gameObj.noteTimer.value)
+            let t = gameObj.noteTimer.value;
 
             let note = document.createElement("div");
             note.setAttribute("class", "note");
             document.getElementById(`road${roadIndex}`).appendChild(note);
             note.style.animation = "6000ms linear 0ms note";
-            gameObj.checkNoteArray[roadIndex].push({"element": note, "time": gameObj.noteTimer.value, "type": type});
+            gameObj.checkNoteArray[roadIndex].push({"element": note, "time": t, "type": type});
 
             if(longStart == true) {
                 let longNoteLength = 0;
@@ -306,6 +308,8 @@
                     gameObj.score.miss++;
                     scoreUpdate("miss");
                     note.parentElement.removeChild(note);
+                    // note.style.animation = null;
+                    // note.innerText = gameObj.gameTimer.value - gameObj.checkNoteArray[roadIndex][0].time
                     gameObj.checkNoteArray[roadIndex].shift();
                 }
             }, 3150);
@@ -316,7 +320,7 @@
             for(let obj of gameObj.checkNoteArray[roadIndex]) {
                 if(obj.type != type) return;
                 let gap = Math.abs(gameObj.gameTimer.value - obj.time);
-                if(gap < 60) {
+                if(gap < 80) {
                     gameObj.combo++;
                     gameObj.score.maxCombo = gameObj.combo>gameObj.score.maxCombo? gameObj.combo : gameObj.score.maxCombo;
                     gameObj.score.perfect++;
@@ -325,7 +329,7 @@
                     gameObj.checkNoteArray[roadIndex].shift();
                     return;
                 }
-                else if(gap < 80){
+                else if(gap < 100){
                     gameObj.combo = 0;
                     gameObj.score.good++;
                     scoreUpdate("good");
