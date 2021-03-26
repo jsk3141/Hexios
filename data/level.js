@@ -2,6 +2,7 @@
 const level = [
     {
         name: "Tokyovania",
+        longName: "Tokyovania",
         logo: "❤",
         music: 236595088,
         bpm: 316, //실제 bpm이 아닌 한 박자의 길이(ms)
@@ -21,29 +22,9 @@ const level = [
             p: "                                                                                                                                                                                                                                                                                                               ",
         }
     },
-    // {
-    //     name: "光るなら",
-    //     logo: "♫",//"🎹",
-    //     music: 199188362,
-    //     bpm: 174, //실제 bpm이 아닌 한 박자의 길이(ms)
-    //     theme_color: ['#f7dfe3', '#eea972', 'rgba(238, 169, 114, 0.1)'],
-    //     volume: 27,
-    //     delay: 0,
-    //     note: {
-    //         1: "        1 1          1   1 1  1 1  1  1           1                          1  1     ",
-    //         2: " 22     2        2     2    2       2           2                          2      2   ",
-    //         3: " 3 3               3                      3   3                      3                ",
-    //         4: "    4       4        4                       4                     4   4              ",
-    //         5: "    5 5     5    5     5                                        5        5            ",
-    //         6: "       6   6       6      6       6                           6               6       "
-    //     },
-    //     animation: {
-    //         psize: 1,
-    //         p: "                                                                                      ",
-    //     }
-    // },
     {
         name: "Unity",
+        longName: "Unity",
         logo: "𝌻",
         music: 169508644,
         bpm: 143, //실제 bpm이 아닌 한 박자의 길이(ms)
@@ -65,6 +46,7 @@ const level = [
     },
     {
         name: "Time Lapse",
+        longName: "Time Lapse",
         logo: "⧗",
         music: 201112761,
         bpm: 236, //실제 bpm이 아닌 한 박자의 길이(ms)
@@ -82,6 +64,28 @@ const level = [
         animation: {
             psize: 1,
             p: " pt      pt      pt              p   p   p   p   p   p   p   p   r       p   p   r       p   p   b       r   r   r   r   r   r   r   r           m   p   m   p   m   p   m   p   m   p   m   p   m   p   m   p   m   p   m   p   m   p   m   p   b   p   r   r   r                   ",
+        }
+    },
+    {
+        name: "CBA", //"Crimson Bow and Arrow",
+        longName: "Crimson Bow and Arrow",
+        logo: "𒋾",
+        music: 90126709,
+        bpm: 166.5, //실제 bpm이 아닌 한 박자의 길이(ms)
+        theme_color: ['coral', 'lightcoral', 'rgba(240, 128, 128, 0.1)'],
+        volume: 20,
+        delay: 0,
+        note: {
+            1: "      ========        1       1       1       1       ======  ======  ======  ======                          ",
+            2: "         ========       2       2       2       2       ====    ====    ====    ====                          ",
+            3: "      ========             3 3     3 3     3 3     3 3     =       =       =       =                          ",
+            4: "      ========         4       4       4       4       =====   =====   =====   =====                          ",
+            5: "         ========        5       5       5       5       ===     ===     ===     ===                          ",
+            6: "         ========         6 6     6 6     6 6     6 6     ==      ==      ==      ==                          "
+        },
+        animation: {
+            psize: 2,
+            p: "                                                                                                              ",
         }
     },
 ]
