@@ -4,14 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Merriweather+Sans&display=swap" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="style.css?v=1.2">
-    <title>hexios</title>
+    <link rel="stylesheet" type="text/css" href="style.css?v=1.9">
+    <title>Hexios</title>
     <script type="text/javascript" src="data/keycodes.js"></script>
-    <script type="text/javascript" src="data/level.js?v=1.7"></script>
+    <script type="text/javascript" src="data/level.js?v=2.6"></script>
     <script type="text/javascript" src="https://w.soundcloud.com/player/api.js"></script>
 </head>
 <body>
-    <div id="music-box"></div>
     <div id="main" class="page">
         <div id="title">HEXIOS</div>
         <div id="level-container">
@@ -43,9 +42,8 @@
             </div>
         </div>
         <div id="scorebar">
-            <div id="score" style="display: none;">
-                0
-            </div>
+            <div id="musicname">Crimson Bow and Arrow</div>
+            <div id="score">0</div>
         </div>
         <div id="show-combo">
             <div id="combo"></div>
@@ -54,8 +52,8 @@
     </div>
     <div id="result" class="page" style="display: none;">
         <div id="result-score"></div>
+        <div id="music-box" style="display: none;position: absolute;"></div>
     </div>
-    <div id="score" class="page" style="display: none;"></div>
 
     <script id="main-script">
         //page
@@ -71,6 +69,7 @@
             document.getElementById(id).style.display = "block";
             page = id;
         }
+        // pageChange("result")
 
         //메인화면 구성
         function createLevelElement(index) {
@@ -209,12 +208,17 @@
         function play(index, note=0) {
             pageChange("game");
             gameObj.isHard = true;
-            document.getElementById("music-box").innerHTML = '<iframe id="music" width="0" height="0" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/'+level[index].music+'&color=%23ff5500&auto_play=true&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true&visual=true"></iframe>';
+            document.getElementById("music-box").innerHTML = '<iframe id="music" width="100%" height="100%" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/'+level[index].music+'&color=%23ff5500&auto_play=true&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true&visual=true"></iframe>';
             let music = SC.Widget(document.getElementById("music"));
             let musicSetting = false;
             if(!note){
                 document.getElementById("combo").textContent = level[index].logo;
                 document.getElementById("accuracy").textContent = level[index].name;
+                let lvDisplayHardness = "  -  EZ";
+                if(gameObj.isHard == true){
+                    lvDisplayHardness = "  -  HARD";
+                }
+                document.getElementById("musicname").innerHTML = level[index].longName + lvDisplayHardness;
                 gameObj.reset();
             }
             gameObj.curindex = index;
