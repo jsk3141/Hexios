@@ -7,7 +7,9 @@
     --player-tX: 0;
     --player-tY: 0;
     --player-rotate: 0;
-    --player-transitionTime : 50
+    --player-transitionTime : 50;
+    /* design */
+    --setting-key: 0.7;
 }
 
 * {
@@ -27,6 +29,32 @@ body {
 .page {
     width: 100vw;
     height: 100vh;
+}
+
+.main-info{
+    text-shadow: none;
+    font-size: 1vw;
+    width: 100%;
+    text-align-last: center;
+    position: absolute;
+    top: 25vh;
+    animation: blink 2s ease infinite;
+}
+
+.result-pressEsc, .setting-pressEsc{
+    height: 5px;
+    font-size: 1vw;
+    color: silver;
+    animation: blink 2s ease infinite;
+    text-shadow: none;
+    position: absolute;
+    top: 25vh;
+    left: 6.7vw;
+}
+@keyframes blink {
+    0%{opacity: 0.4;}
+    50%{opacity: 0.01;}
+    100%{opacity: 0.4;}
 }
 
 #scorebar{
@@ -50,17 +78,227 @@ body {
     position: absolute;
     left: 2vw;
 }
-
-#result-score{
-    font-size: 48px;
+#result-header, #setting-header{
+    width: 90vw;
+    height: 10vh;
     position: absolute;
-    width: 80vw;
-    height: 20vh;
-    top: 40vh;
-    left: 10vw;
+    top: 15vh;
+    left: 5vw;
     display: flex;
     align-items: center;
+    padding-left: 1.5vw;
+    font-size: 4vw;
+}
+#setting-header{
+    text-shadow: 0px 0px 12px silver;
+}
+.result-table, .setting-table{
+    width: 90vw;
+    height: 56.5vh;
+    position: absolute;
+    top : 33vh;
+    left: 5vw;
+    border-collapse:collapse;
+}
+.result-desc, .setting-desc{
+    text-align: left;
+    font-size: 1.8vw;
+    text-shadow: none;
+    padding-left: 1.5vw;
+    height: 10vh;
+}
+.setting-specific-desc{
+    text-shadow: none;
+    font-size: 0.7vw;
+    position: absolute;
+    top: 41vh;
+    opacity: 0.4;
+}
+.setting-noteDesc{
+    left: 6.5vw;
+}
+.setting-soundAdjustmentDesc{
+    left: 38vw;
+}
+.result-desc{
+    border-bottom: 2px solid silver;
+}
+.result-desc:first-child, .result-inf:first-child{
+    width: 73%;
+    border-right: 2px solid silver;
+}
+.setting-desc:first-child, .setting-inf:first-child{
+    width: 35%;
+}
+.setting-inf:first-child{
+    width: 100%;
+    height: 100%;
+    display: flex;
     justify-content: center;
+    align-items: center;
+}
+.keycap{
+    width: 3.4vw;
+    height: 3.7vw;
+    border-radius: 1vw;
+    border : 0.2vw solid silver;
+    color: silver;
+    text-shadow: none;
+    font-size: 1.6vw;
+    padding-top: 0.3vw;
+    padding-left: 0.6vw;
+    background: #333333;
+    position: absolute;
+    box-shadow: 0px 0px 3px silver;
+}
+
+.keycap:nth-child(1){
+    transform: translate(calc(var(--setting-key) * -5vw), calc(var(--setting-key) * -8.66vw));
+}
+.keycap:nth-child(2){
+    transform: translate(calc(var(--setting-key) * 5vw), calc(var(--setting-key) * -8.66vw));
+}
+.keycap:nth-child(3){
+    transform: translate(calc(var(--setting-key) * 10vw), 0);
+}
+.keycap:nth-child(4){
+    transform: translate(calc(var(--setting-key) * 5vw), calc(var(--setting-key) * 8.66vw));
+}
+.keycap:nth-child(5){
+    transform: translate(calc(var(--setting-key) * -5vw), calc(var(--setting-key) * 8.66vw));
+}
+.keycap:nth-child(6){
+    transform: translate(calc(var(--setting-key) * -10vw), 0);
+}
+
+.result-desc:last-child, .result-inf:last-child{
+    border-left: 2px solid silver;
+}
+.result-inf{
+    height: 46.5vh;
+}
+.result-performance-evaluate .result-note{
+    display: flex;
+    width: 100%;
+    height: 20%;
+    font-size: 2vw;
+    justify-content: space-between;
+    align-items: center;
+}
+.result-performance-evaluate .result-note {
+    text-align: left;
+}
+.result-performance-evaluate .result-note .key, .txt-inner .number, .txt-inner .desc, .txt-inner .big{
+    text-shadow: none;
+}
+.result-performance-evaluate .result-note .value{
+    text-align: right;
+    text-shadow: none;
+}
+.result-evaluate{
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+.result-score-evaluate{
+    height: 100%;
+    width: 62%;
+}
+.result-performance-evaluate{
+    height: 100%;
+    width: 38%;
+    display: flex;
+    align-items: center;
+}
+.result-note-container{
+    width: 80%;
+    height: 75%;
+}
+.result-level-info{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.result-level{
+    width: 100%;
+    height: 50%;
+}
+.result-highscore{
+    width: 100%;
+    height: 50%;
+}
+.result-score-evaluate{
+    display: flex;
+}
+.result-score-evaluate .txt{
+    height: 100%;
+    width: 60%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+.result-score-evaluate .rank{
+    height: 100%;
+    width: 40%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+.result-circle{
+    width: 9vw;
+    height: 9vw;
+    border: 4px solid silver;
+    border-radius: 50%;
+    margin-left: 2vw;
+    text-align: center;
+    line-height: 9vw;
+    font-size: 5vw;
+    font-weight: 500;
+    text-shadow: none;
+    /* box-shadow: 0px 0px 12px var(--theme-color-one); */
+}
+.txt .txt-inner{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    padding-right: 1vw;
+}
+.txt .txt-inner .number{
+    font-size: 6vw;
+}
+.txt .txt-inner .desc{
+    font-size: 1vw;
+}
+.result-level, .result-highscore{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.result-level-info .txt-inner{
+    width: 70%;
+    height: 70%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+.result-level-info .result-level .txt-inner{
+    justify-content: flex-end;
+}
+.result-level-info .result-highscore .txt-inner{
+    justify-content: flex-start;
+}
+.result-level-info .result-level .txt-inner .big{
+    font-size: 3.3vw;
+}
+.result-level-info .result-highscore .txt-inner .big{
+    font-size: 5vw;
+}
+.result-level-info .txt-inner .desc{
+    font-size: 1vw;
 }
 
 #player {
@@ -150,8 +388,13 @@ body {
 }
 
 #music-box {
-    width: 15vw;
-    height: 20vh;
+    width: calc(80% - 22px);
+    height: 50%;
+    left: 10%;
+    position: absolute;
+    top: 35%;
+    border: 1px solid;
+    padding: 10px;
 }
 
 .note {
