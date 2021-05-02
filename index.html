@@ -4,15 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Merriweather+Sans&display=swap" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="style.css?v=1.9">
+    <link rel="stylesheet" type="text/css" href="style.css?v=2.3821">
     <title>Hexios</title>
     <script type="text/javascript" src="data/keycodes.js"></script>
-    <script type="text/javascript" src="data/level.js?v=2.6"></script>
+    <script type="text/javascript" src="data/level.js?v=3.14443221121"></script>
     <script type="text/javascript" src="https://w.soundcloud.com/player/api.js"></script>
 </head>
 <body>
     <div id="main" class="page">
         <div id="title">HEXIOS</div>
+        <div class="main-info">Press [esc] for settings</div>
         <div id="level-container">
             <div id="slc-0" class="small-lev-cont"></div>
             <div id="slc-1" class="small-lev-cont"></div>
@@ -51,8 +52,91 @@
         </div>
     </div>
     <div id="result" class="page" style="display: none;">
-        <div id="result-score"></div>
-        <div id="music-box" style="display: none;position: absolute;"></div>
+        <div id="result-score" style="display: none;position: absolute;"></div>
+        <div id="result-header">Hexios</div>
+        <div class="result-pressEsc">Press [esc] to return</div>
+        <table class="result-table">
+            <thead>
+                <tr>
+                    <th class="result-desc">Score Info</th>
+                    <th class="result-desc">Music Info</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="result-inf">
+                        <div class="result-evaluate">
+                            <div class="result-score-evaluate">
+                                <div class="txt">
+                                    <div class="txt-inner">
+                                        <div id="result-total-score" class="number">31415</div>
+                                        <div class="desc">Total Score</div>
+                                    </div>
+                                </div>
+                                <div class="rank">
+                                    <div class="result-circle">π</div>
+                                </div>
+                            </div>
+                            <div class="result-performance-evaluate">
+                                <div class="result-note-container">
+                                    <div class="perfect result-note"><div class="key">Perfect</div><div class="value">314</div></div>
+                                    <div class="good result-note"><div class="key">Good</div><div class="value">159</div></div>
+                                    <div class="bad result-note"><div class="key">Bad</div><div class="value">265</div></div>
+                                    <div class="miss result-note"><div class="key">Miss</div><div class="value">358</div></div>
+                                    <div class="max-combo result-note"><div class="key">Max Combo</div><div class="value">979</div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="result-inf">
+                        <div class="result-level-info">
+                            <div class="result-level">
+                                <div class="txt-inner">
+                                    <div class="big">●○○○●</div>
+                                    <div class="desc">Level</div>
+                                </div>
+                            </div>
+                            <div class="result-highscore">
+                                <div class="txt-inner">
+                                    <div class="big">31415</div>
+                                    <div class="desc">High Score</div>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div id="music-box" style="display: none; position: absolute;"></div>
+    </div>
+    <div id="setting" class="page" style="display: none;">
+        <div id="setting-header">Settings</div>
+        <div class="setting-pressEsc">Press [esc] to return</div>
+        <div class="setting-specific-desc setting-noteDesc">Press following keys for notes coming from each directions</div>
+        <div class="setting-specific-desc setting-soundAdjustmentDesc">Personalize note delay</div>
+        <table class="setting-table">
+            <thead>
+                <tr>
+                    <th class="setting-desc">Note</th>
+                    <th class="setting-desc">Sound Adjustment</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="setting-inf">
+                            <div class="keycap key0" onclick="setNoteControl(0)">w</div>
+                            <div class="keycap key1" onclick="setNoteControl(1)">e</div>
+                            <div class="keycap key2" onclick="setNoteControl(2)">l</div>
+                            <div class="keycap key3" onclick="setNoteControl(3)">,</div>
+                            <div class="keycap key4" onclick="setNoteControl(4)">m</div>
+                            <div class="keycap key5" onclick="setNoteControl(5)">a</div>
+                    </td>
+                    <td class="setting-inf">
+                        
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 
     <script id="main-script">
@@ -62,6 +146,14 @@
         //settings
         const keyBinds = localStorage["keyBinds"] ? JSON.parse(localStorage["keyBinds"]) : ["w", "e", "l", ",", "m", "a"];
         const soundAdjustment = localStorage["soundAdjustment"] ? Number(localStorage["soundAdjustment"]) : 160;
+        let highScoreFrame = [];
+        for(let i=0;i<level.length;i++){
+            highScoreFrame.push(0)
+        }
+        if(!localStorage["highScore"]){
+            localStorage["highScore"] = JSON.stringify(highScoreFrame)
+        }
+        let highScore = JSON.parse(localStorage["highScore"])
 
         //page 이동
         function pageChange(id) {
@@ -69,7 +161,6 @@
             document.getElementById(id).style.display = "block";
             page = id;
         }
-        // pageChange("result")
 
         //메인화면 구성
         function createLevelElement(index) {
@@ -96,6 +187,27 @@
             }
         }
         for(i=0;i<level.length;i++){createLevelElement(i)}
+
+        let noteChangeAble = [false, false, false, false, false, false];
+        function setNoteControl(num){
+            if(noteChangeAble[num]){
+                document.querySelector(`.key${num}`).style.color = 'silver';
+                document.querySelector(`.key${num}`).style.borderColor = 'silver';
+                noteChangeAble[num] = false
+            }else{
+                noteChangeAble = [false, false, false, false, false, false];
+                for(let i = 0;i<6;i++){
+                    document.querySelector(`.key${i}`).style.color = '';
+                    document.querySelector(`.key${i}`).style.borderColor = '';
+                }
+                document.querySelector(`.key${num}`).style.color = 'orange';
+                document.querySelector(`.key${num}`).style.borderColor = 'orange';
+                noteChangeAble[num] = true
+            }
+        }
+        for(let i = 0;i<6;i++){
+            document.querySelector(`.key${i}`).innerText = keyBinds[i];
+        }
     </script>
     <script id="game-script">
         //타이머 (스탑워치)
@@ -204,27 +316,74 @@
         visuals.cssVar.set("--player-rotate", 0)
         visuals.cssVar.set("--scale", 1)
 
+        const rankStandard = {
+            P : 100,
+            S : 90,
+            A : 80,
+            B : 70,
+            C : 60,
+            D : 50,
+            E : 40,
+            F : 30,
+            U : 0
+        }
+
+        //결과
+        function checkRank(index, score){
+            let max = level[index].high;
+            let rank;
+            for (const property in rankStandard){
+                if(score>=max * rankStandard[property] / 100){
+                    rank = String(property);
+                    break;
+                }
+            }
+            return rank;
+        }
+
+        function setResult(){
+            document.getElementById("result-score").innerText = gameObj.score.totalScore
+            document.querySelector("#result-header").innerText = level[gameObj.curindex].longName
+            document.querySelector("#result-total-score").innerText = gameObj.score.totalScore;
+            document.querySelector(".perfect .value").innerText = gameObj.score.perfect;
+            document.querySelector(".good .value").innerText = gameObj.score.good;
+            document.querySelector(".bad .value").innerText = gameObj.score.bad;
+            document.querySelector(".miss .value").innerText = gameObj.score.miss;
+            document.querySelector(".max-combo .value").innerText = gameObj.score.maxCombo;
+            document.querySelector(".rank .result-circle").innerText = checkRank(gameObj.curindex, gameObj.score.totalScore);
+            let lv = "";
+            for(let i=0;i<level[gameObj.curindex].level;i++){
+                lv += "●";
+            }
+            while(lv.length<5){
+                lv = "○" + lv;
+            }
+            document.querySelector(".result-level .txt-inner .big").innerText = lv;
+            if(gameObj.score.totalScore>highScore[gameObj.curindex]){
+                highScore[gameObj.curindex] = gameObj.score.totalScore;
+                localStorage["highScore"] = JSON.stringify(highScore);
+            }
+            document.querySelector(".result-highscore .txt-inner .big").innerText = highScore[gameObj.curindex];
+        }
+
         //게임 단계 실행
         function play(index, note=0) {
             pageChange("game");
             gameObj.isHard = true;
             document.getElementById("music-box").innerHTML = '<iframe id="music" width="100%" height="100%" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/'+level[index].music+'&color=%23ff5500&auto_play=true&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true&visual=true"></iframe>';
+            document.getElementById("score").innerText = 0;
+            document.getElementById("accuracy").style.textShadow = `0px 0px 10px ${level[index].theme_color[0]}`;
             let music = SC.Widget(document.getElementById("music"));
             let musicSetting = false;
             if(!note){
                 document.getElementById("combo").textContent = level[index].logo;
                 document.getElementById("accuracy").textContent = level[index].name;
-                let lvDisplayHardness = "  -  EZ";
-                if(gameObj.isHard == true){
-                    lvDisplayHardness = "  -  HARD";
-                }
-                document.getElementById("musicname").innerHTML = level[index].longName + lvDisplayHardness;
+                document.getElementById("musicname").innerHTML = level[index].longName;
                 gameObj.reset();
             }
             gameObj.curindex = index;
             document.querySelector(':root').style.setProperty('--theme-color-one', level[gameObj.curindex].theme_color[0]);
             document.querySelector(':root').style.setProperty('--theme-color-two', level[gameObj.curindex].theme_color[1]);
-
             setTimeout(() => {
                 gameObj.noteTimer.start();
                 gameObj.gameTimer.value = -3000;
@@ -232,7 +391,7 @@
             }, 1000 - level[index].bpm);
             setTimeout(() => {
                 playNote(index);
-            }, 1000 - soundAdjustment - level[index].bpm);
+            }, 1000 - soundAdjustment - level[index].bpm + level[index].delay);
             //music 초기 세팅
             music.bind(SC.Widget.Events.READY, function() {
                 if(musicSetting == false) {
@@ -241,7 +400,7 @@
                 }
             });
             setTimeout(() => {
-                music.seekTo(level[index].delay + level[index].bpm * note);
+                music.seekTo(level[index].bpm * note);
                 music.play();
             }, 4000 - level[index].bpm);
         }
@@ -276,8 +435,8 @@
                 if(noteIndex == level[index].note[1].length){
                     clearInterval(noteInterval); //gg
                     setTimeout(()=>{
+                        setResult();
                         pageChange("result");
-                        document.getElementById("result-score").innerText = gameObj.score.totalScore
                     }, 200)
                 }
             }, level[index].bpm);
@@ -293,7 +452,6 @@
             if(noteArray[noteIndex] != "=" && noteArray[noteIndex - 1] == "=") type = "long end"; //long start 도 default로 간주함;
             else if(noteArray[noteIndex] == "=" && noteArray[noteIndex - 1] != "=") longStart = true; //하지만 default와 구분은 해 주어야 함.
             else if(noteArray[noteIndex] == "=" || noteArray[noteIndex] == " ") return;
-            // console.log(gameObj.gameTimer.value, gameObj.noteTimer.value)
             let t = gameObj.noteTimer.value;
 
             let note = document.createElement("div");
@@ -334,8 +492,6 @@
                     gameObj.score.miss++;
                     scoreUpdate("miss");
                     note.parentElement.removeChild(note);
-                    // note.style.animation = null;
-                    // note.innerText = gameObj.gameTimer.value - gameObj.checkNoteArray[roadIndex][0].time
                     gameObj.checkNoteArray[roadIndex].shift();
                 }
             }, 3150);
@@ -346,7 +502,7 @@
             for(let obj of gameObj.checkNoteArray[roadIndex]) {
                 if(obj.type != type) return;
                 let gap = Math.abs(gameObj.gameTimer.value - obj.time);
-                if(gap < 80) {
+                if(gap < 90) {
                     scoreUpdate("perfect");
                     obj.element.parentElement.removeChild(obj.element);
                     gameObj.checkNoteArray[roadIndex].shift();
@@ -400,7 +556,7 @@
             }else{
                 gameObj.combo = 0;
             }
-            gameObj.score.totalScore += scoreWeight[accuracy] + gameObj.combo;
+            gameObj.score.totalScore += scoreWeight[accuracy] + Math.floor(gameObj.combo*0.1);
         }
 
         window.onkeydown = () => {
@@ -418,7 +574,7 @@
             }
         };
 
-        window.onkeyup = () => {
+        window.onkeyup = () =>{
             if(page == "game") {
                 let keyIndex = keyBinds.indexOf(keycodes[window.event.keyCode]) + 1;
                 if(keyIndex >= 1 && keyIndex <= 6) {
@@ -436,6 +592,47 @@
                 }
                 if(window.event.keyCode==32){
                     visuals.pop(1.1, level[gameObj.curindex].bpm)
+                }
+            }else if(page == "result") {
+                if(event.keyCode==27){
+                    pageChange("main")
+                    document.getElementById("music-box").innerHTML = ""
+                }
+            }else if(page == "setting") {
+                if(event.keyCode==27){
+                    noteChangeAble = [false, false, false, false, false, false];
+                    for(let i = 0;i<6;i++){
+                        document.querySelector(`.key${i}`).style.color = '';
+                        document.querySelector(`.key${i}`).style.borderColor = '';
+                    }
+                    pageChange("main")
+                }else{
+                    for(let i=0;i<6;i++){
+                        if(noteChangeAble[i]){
+                            for(let i=0;i<6;i++){
+                                if(keyBinds[i]==event.key){
+                                    alert("don't match same key")
+                                    return;
+                                }
+                            }
+                            if(event.key.length>3){
+                                alert("not appropriate")
+                                return
+                            }
+                            keyBinds[i] = event.key;
+                            localStorage["keyBinds"] = JSON.stringify(keyBinds);
+                            noteChangeAble = [false, false, false, false, false, false];
+                            for(let i = 0;i<6;i++){
+                                document.querySelector(`.key${i}`).style.color = '';
+                                document.querySelector(`.key${i}`).style.borderColor = '';
+                            }
+                            document.querySelector(`.key${i}`).innerText = keyBinds[i];
+                        }
+                    }
+                }
+            }else if(page == "main") {
+                if(event.keyCode==27){
+                    pageChange("setting")
                 }
             }
         };
