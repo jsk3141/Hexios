@@ -154,6 +154,10 @@
             localStorage["highScore"] = JSON.stringify(highScoreFrame)
         }
         let highScore = JSON.parse(localStorage["highScore"])
+        while(level.length<highScore.length){
+            highScore.push(0);
+        }
+        localStorage["highScore"] = JSON.stringify(highScore);
 
         //page 이동
         function pageChange(id) {
